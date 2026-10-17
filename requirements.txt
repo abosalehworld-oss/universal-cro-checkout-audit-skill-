@@ -1,4 +1,11 @@
-requests>=2.31.0
-beautifulsoup4>=4.12.0
-lxml>=5.0.0
-playwright>=1.40.0
+# =====================================================================
+# Universal CRO & Checkout Funnel Audit SKILL v2.0
+# Core dependencies pinned to exact audited versions for stability & security
+# For cryptographic SHA-256 hash checking mode, use requirements-secure.lock:
+#   pip install --require-hashes -r requirements-secure.lock
+# =====================================================================
+
+requests==2.32.3
+beautifulsoup4==4.12.3
+lxml==5.3.0
+playwright==1.48.0
