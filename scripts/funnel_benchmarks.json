@@ -1,0 +1,142 @@
+{
+  "benchmark_metadata": {
+    "source": "Baymard Institute Global Meta-Analysis + Regional Central Bank Reports (SAMA, ECB, Fed, RBI, BCB)",
+    "calibration_year": 2026,
+    "lifetime_validation_mandate": "If running in a future year (e.g. 2027+), the AI Agent MUST use search_web with the queries provided in 'dynamic_search_queries' to update these benchmarks."
+  },
+  "global_averages": {
+    "average_cart_abandonment_rate_overall": 70.22,
+    "average_cart_abandonment_rate_mobile": 82.4,
+    "average_cart_abandonment_rate_desktop": 67.8,
+    "average_cart_abandonment_rate_tablets": 73.5,
+    "average_checkout_steps_desktop": 5.1,
+    "ideal_checkout_steps": 1,
+    "average_form_fields_measured": 11.8,
+    "ideal_form_fields_ecommerce": 7,
+    "ideal_form_fields_lead_gen": 4
+  },
+  "top_abandonment_causes": [
+    {
+      "cause": "Extra costs too high (shipping, taxes, fees revealed late)",
+      "percentage": 48.0,
+      "severity": "CRITICAL",
+      "remedy": "Display estimated shipping fees early in cart or header before checkout"
+    },
+    {
+      "cause": "Site wanted me to create an account (Forced Registration)",
+      "percentage": 26.0,
+      "severity": "CRITICAL",
+      "remedy": "Implement 1-click Guest Checkout and offer password creation post-purchase"
+    },
+    {
+      "cause": "Checkout process too long / complicated (Form Fatigue)",
+      "percentage": 22.0,
+      "severity": "HIGH",
+      "remedy": "Consolidate into single-step accordion or 1-page checkout, auto-fill address"
+    },
+    {
+      "cause": "Didn't trust the site with credit card info",
+      "percentage": 25.0,
+      "severity": "HIGH",
+      "remedy": "Add recognizable payment gateway badges (Apple Pay, Mada, SSL badges, commercial register)"
+    },
+    {
+      "cause": "Delivery too slow",
+      "percentage": 22.0,
+      "severity": "MEDIUM",
+      "remedy": "Provide clear delivery date windows (e.g. 'Delivered by Thursday') instead of vague '3-5 days'"
+    },
+    {
+      "cause": "Not enough payment methods offered",
+      "percentage": 13.0,
+      "severity": "HIGH",
+      "remedy": "Offer localized payment methods (Apple Pay, Mada, Tabby/Tamara, Fawry, COD, iDEAL, BLIK)"
+    },
+    {
+      "cause": "Website had errors / crashed / timed out",
+      "percentage": 17.0,
+      "severity": "CRITICAL",
+      "remedy": "Fix API latency, remove heavy third-party tracking scripts, ensure fast checkout server response"
+    }
+  ],
+  "regional_payment_matrix": {
+    "US": {
+      "market": "United States & North America",
+      "mandatory_methods": ["Apple Pay", "Shop Pay (for Shopify stores)", "Credit Cards (Visa/Mastercard/Amex)", "PayPal Express"],
+      "baseline_bnpl_methods": ["Affirm", "Klarna", "Afterpay"],
+      "tax_mandate": "Automatic state/local sales tax calculation by 5-digit ZIP code (Avalara / TaxJar).",
+      "market_share_insights": "Express wallet checkout (Shop Pay / Apple Pay) increases checkout conversion by up to 35% by skipping shipping/billing entry."
+    },
+    "UK": {
+      "market": "United Kingdom",
+      "mandatory_methods": ["Apple Pay", "Google Pay", "Credit / Debit Cards", "PayPal"],
+      "baseline_bnpl_methods": ["Klarna", "Clearpay"],
+      "regulatory_mandate": "SCA / 3D Secure 2.0 mandatory under UK banking regulations."
+    },
+    "DE": {
+      "market": "Germany",
+      "mandatory_methods": ["PayPal", "Klarna (Pay on Invoice / Rechnung)", "SEPA Direct Debit", "Sofort / Giropay"],
+      "market_share_insights": "German consumers traditionally prefer paying after receiving goods (Rechnung). Direct credit card entry has lower adoption than PayPal/Klarna."
+    },
+    "NL": {
+      "market": "Netherlands",
+      "mandatory_methods": ["iDEAL (Crucial >65% Market Share)", "Credit Card", "Klarna"],
+      "market_share_insights": "If an online store lacks iDEAL in the Netherlands, checkout abandonment typically exceeds 70%."
+    },
+    "PL": {
+      "market": "Poland",
+      "mandatory_methods": ["BLIK (>70% of all mobile and web transactions)", "PayU / Przelewy24"],
+      "market_share_insights": "BLIK (6-digit instant mobile code) is the undisputed king of Polish eCommerce."
+    },
+    "FR": {
+      "market": "France",
+      "mandatory_methods": ["Cartes Bancaires (CB)", "PayPal", "Apple Pay"],
+      "regulatory_mandate": "Strict compliance with EU GDPR: consent checkboxes cannot be pre-checked."
+    },
+    "BR": {
+      "market": "Brazil & Latin America",
+      "mandatory_methods": ["Pix (Instant QR/Key Payment >45% share)", "Credit Cards with Installments (Parcelamento)", "Boleto Bancário"],
+      "market_share_insights": "Pix has become the fastest-growing payment method in LATAM history."
+    },
+    "IN": {
+      "market": "India",
+      "mandatory_methods": ["UPI (Unified Payments Interface >80% share via PhonePe/GPay/Paytm)", "Cash on Delivery (COD)", "Net Banking"],
+      "market_share_insights": "UPI QR code and mobile app intent triggers dominate checkouts."
+    },
+    "SA": {
+      "market": "Saudi Arabia",
+      "digital_payment_share": "85% (SAMA Vision 2030 Achievement)",
+      "mandatory_methods": ["Mada (مدى)", "Apple Pay"],
+      "baseline_bnpl_methods": ["Tamara (تمارا)", "Tabby (تابي)"],
+      "legacy_methods": ["Cash on Delivery (الدفع عند الاستلام - Dropped below 15%)", "Credit Card (Visa/Mastercard)"],
+      "market_share_insights": "Mada drives over 69.3 billion SAR quarterly. Apple Pay dominates mobile/in-app checkouts. Stores without BNPL suffer noticeable abandonment."
+    },
+    "EG": {
+      "market": "Egypt",
+      "digital_payment_share": "45-50% (Rapidly growing via Instapay & Wallets)",
+      "mandatory_methods": ["Cash on Delivery (الدفع عند الاستلام)", "Instapay (إنستاباي) / Smart Wallets", "Fawry (فوري)"],
+      "high_impact_methods": ["ValU (فاليو - تقسيط)", "Paymob Card Payment", "Vodafone Cash"],
+      "market_share_insights": "COD remains dominant (>50%), but Instapay and mobile wallets represent the highest growth velocity."
+    },
+    "AE": {
+      "market": "United Arab Emirates",
+      "digital_payment_share": ">80%",
+      "mandatory_methods": ["Apple Pay", "Credit Card (Visa / Mastercard)"],
+      "high_impact_methods": ["Tabby", "Tamara", "Google Pay"],
+      "market_share_insights": "Digital wallet penetration exceeds 70% in retail eCommerce."
+    },
+    "KW": {
+      "market": "Kuwait",
+      "mandatory_methods": ["KNET (كي نت)", "Apple Pay"],
+      "high_impact_methods": ["Credit Card", "Cash on Delivery"],
+      "market_share_insights": "KNET is mandatory for high conversion in Kuwait."
+    }
+  },
+  "dynamic_search_queries": {
+    "baymard_abandonment": "Baymard Institute average shopping cart abandonment rate [YEAR]",
+    "us_checkout_share": "US ecommerce payment methods market share digital wallets [YEAR]",
+    "europe_payments": "European ecommerce payment methods iDEAL Klarna BLIK market share [YEAR]",
+    "saudi_payments": "Saudi Arabia ecommerce payment methods market share SAMA [YEAR]",
+    "egypt_payments": "Egypt ecommerce payment methods Instapay COD market share [YEAR]"
+  }
+}
