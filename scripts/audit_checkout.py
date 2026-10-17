@@ -141,7 +141,6 @@ def get_stealth_headers(referer=None, is_mobile=False):
         'User-Agent': ua,
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
         'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8',
-        'Accept-Encoding': 'gzip, deflate, br',
         'Connection': 'keep-alive',
         'Cache-Control': 'max-age=0',
         'sec-ch-ua': '"Chromium";v="131", "Google Chrome";v="131", "Not-A.Brand";v="99"',
@@ -297,6 +296,26 @@ class PageFetcher:
                     locale='ar-EG'
                 )
 
+                # Sync requests session cookies to Playwright context
+                try:
+                    p_url = urlparse(url)
+                    cookie_domain = p_url.netloc
+                    pw_cookies = []
+                    for c in self.session.cookies:
+                        cdom = c.domain if c.domain else cookie_domain
+                        if not cdom.startswith(".") and "." in cdom:
+                            cdom = "." + cdom
+                        pw_cookies.append({
+                            "name": c.name,
+                            "value": c.value,
+                            "domain": cdom,
+                            "path": c.path or "/"
+                        })
+                    if pw_cookies:
+                        context.add_cookies(pw_cookies)
+                except Exception:
+                    pass
+
                 # Anti-detection stealth script injection
                 context.add_init_script("""
                     Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
@@ -310,7 +329,10 @@ class PageFetcher:
 
                 resp = page.goto(url, timeout=self.timeout * 1000, wait_until="domcontentloaded")
                 page.wait_for_timeout(2500)
-                page.evaluate("window.scrollTo(0, document.body.scrollHeight / 2)")
+                try:
+                    page.evaluate("if (document.body) window.scrollTo(0, document.body.scrollHeight / 2)")
+                except Exception:
+                    pass
                 page.wait_for_timeout(1000)
 
                 html = page.content()
@@ -415,12 +437,39 @@ def seed_cart_and_get_checkout(base_url, fetcher, platform_name="unknown"):
             if any(k in full.lower() for k in ["/product/", "/products/", "/item/", "/p/", "/منتج/"]):
                 product_links.append(full)
 
+    if not product_links:
+        for a in soup.find_all("a", href=True):
+            href = a.get("href", "")
+            full = urljoin(base_url, href)
+            if urlparse(full).netloc == base_parsed.netloc and any(k in full.lower() for k in ["/shop", "/store", "/product-category/"]):
+                shop_res = fetcher.fetch_html(full)
+                if shop_res.get("ok"):
+                    s_soup = BeautifulSoup(shop_res["html"], "html.parser")
+                    for sa in s_soup.find_all("a", href=True):
+                        shref = sa.get("href", "")
+                        sfull = urljoin(full, shref)
+                        if urlparse(sfull).netloc == base_parsed.netloc and any(k in sfull.lower() for k in ["/product/", "/products/", "/item/", "/p/"]):
+                            product_links.append(sfull)
+                if product_links:
+                    break
+
     # 2. Try Platform-Specific Cart Seeding
     # WooCommerce: Probe ?add-to-cart= or look for add_to_cart_button data-product_id
     if platform_name == "WooCommerce" or "woocommerce" in home_res["html"].lower():
         add_btn = soup.find(attrs={"data-product_id": True})
+        if not add_btn and product_links:
+            prod_res = fetcher.fetch_html(product_links[0])
+            if prod_res.get("ok"):
+                p_soup = BeautifulSoup(prod_res["html"], "html.parser")
+                add_btn = p_soup.find(attrs={"data-product_id": True}) or p_soup.find("button", attrs={"name": "add-to-cart"})
+                if add_btn and (add_btn.get("data-product_id") or add_btn.get("value")):
+                    pid = add_btn.get("data-product_id") or add_btn.get("value")
+                    seed_url = f"{origin}/?add-to-cart={pid}"
+                    safe_print(f"    [+] WooCommerce Cart Seed triggered from product page: {seed_url}")
+                    session.get(seed_url, timeout=10)
+                    return urljoin(origin, "/checkout/")
         if add_btn:
-            pid = add_btn.get("data-product_id")
+            pid = add_btn.get("data-product_id") or add_btn.get("value")
             seed_url = f"{origin}/?add-to-cart={pid}"
             safe_print(f"    [+] WooCommerce Cart Seed triggered: {seed_url}")
             session.get(seed_url, timeout=10)
@@ -1004,27 +1053,31 @@ def main():
     target_audit_html = html
 
     # 4. Target Specific Checkout Page If Discovered
-    if discovered_urls["checkout_urls"] and final_url.rstrip('/') == urlparse(final_url).netloc:
+    is_root_url = urlparse(final_url).path.strip('/') in ('', 'en', 'ar')
+    if discovered_urls["checkout_urls"] and is_root_url:
         checkout_to_check = discovered_urls["checkout_urls"][0]
         co_res = fetcher.fetch_html(checkout_to_check, use_playwright=args.playwright, is_mobile=args.mobile)
         if co_res.get("ok") and len(co_res.get("html", "")) > 400:
             target_audit_url = co_res["url"]
             target_audit_html = co_res["html"]
+            platform_info = detect_platform_and_stack(target_audit_html, target_audit_url)
 
     # 5. Autonomous Cart Seeding (if requested or if 0 fields found in checkout)
     soup_test = BeautifulSoup(target_audit_html, "html.parser")
     inputs_count = len(soup_test.find_all(["input", "select", "textarea"]))
-    if args.seed_cart or inputs_count <= 2:
+    if args.seed_cart or inputs_count <= 2 or "/cart" in target_audit_url.lower():
         safe_print("    [!] Cart appears empty or unseeded. Attempting autonomous cart seeding...")
         seed_result = seed_cart_and_get_checkout(final_url, fetcher, platform_name=platform_info["platform"])
         if isinstance(seed_result, dict) and seed_result.get("html"):
             target_audit_html = seed_result["html"]
             target_audit_url = seed_result["url"]
+            platform_info = detect_platform_and_stack(target_audit_html, target_audit_url)
         elif isinstance(seed_result, str):
             co_res2 = fetcher.fetch_html(seed_result, use_playwright=args.playwright, is_mobile=args.mobile)
             if co_res2.get("ok"):
                 target_audit_html = co_res2["html"]
                 target_audit_url = co_res2["url"]
+                platform_info = detect_platform_and_stack(target_audit_html, target_audit_url)
 
     # 6. Analyze DOM Friction & Form Usability
     analysis = analyze_checkout_dom(target_audit_html, target_audit_url)
