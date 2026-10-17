@@ -771,8 +771,25 @@ def analyze_checkout_dom(html, page_url=""):
 
         results["fields_by_type"][input_type] = results["fields_by_type"].get(input_type, 0) + 1
 
+        # Check if field belongs to hidden login or coupon accordion
+        parent_form = el.find_parent("form")
+        parent_div = el.find_parent(attrs={"style": True})
+        is_aux = False
+        if parent_form:
+            p_cls = " ".join(parent_form.get("class", [])).lower()
+            p_style = parent_form.get("style", "").replace(" ", "").lower()
+            if "login" in p_cls or "coupon" in p_cls or "display:none" in p_style:
+                is_aux = True
+        if parent_div and "display:none" in parent_div.get("style", "").replace(" ", "").lower():
+            is_aux = True
+        
+        field_info["is_auxiliary"] = is_aux
+
     # Autocomplete compliance percentage
     tot = results["total_fields"]
+    active_inputs = [f for f in results["fields_detailed"] if not f.get("is_auxiliary") and f["type"] not in ("radio", "checkbox")]
+    active_count = len(active_inputs)
+
     if tot > 0:
         ac_rate = (results["autocomplete_stats"]["has_autocomplete"] / tot) * 100
         results["autocomplete_stats"]["compliance_rate"] = f"{ac_rate:.1f}%"
@@ -783,12 +800,12 @@ def analyze_checkout_dom(html, page_url=""):
         results["autocomplete_stats"]["compliance_rate"] = "N/A (No fields detected or CSR rendered)"
 
     # 3. Field Count Friction Evaluation (Baymard Benchmark: Ideal is 6-8 fields, Avg is 11.8)
-    if tot > 14:
-        results["friction_flags"].append(f"SEVERE FRICTION: Form contains {tot} input fields (Baymard ideal threshold is 6-8).")
+    if active_count > 12:
+        results["friction_flags"].append(f"SEVERE FRICTION: Form contains {active_count} active input fields (Baymard ideal threshold is 6-8).")
         results["friction_score"] -= 20
-    elif tot > 10:
-        results["friction_flags"].append(f"MODERATE FRICTION: Form contains {tot} input fields (Exceeds ideal standard of 8 fields).")
-        results["friction_score"] -= 10
+    elif active_count > 8:
+        results["friction_flags"].append(f"MODERATE FRICTION: Form contains {active_count} active input fields (Slightly exceeds ideal standard of 8 fields).")
+        results["friction_score"] -= 8
     elif tot == 0:
         results["friction_flags"].append("WARNING: 0 input fields detected in static DOM. Flow may be fully client-side rendered (CSR/React) or requires cart items first.")
 
@@ -799,16 +816,33 @@ def analyze_checkout_dom(html, page_url=""):
             results["friction_flags"].append(f"KEYBOARD FRICTION: Phone field '{p_field['name'] or p_field['id']}' uses type='{p_field['type']}' instead of type='tel'. Forces desktop keyboard on mobile.")
             results["friction_score"] -= 8
 
-    # 4. Coupon Code Friction Check
+    # 4. Coupon Code Friction Check (Checks for display:none or accordion toggle)
     coupon_keywords = ["coupon", "voucher", "promo", "discount", "كوبون", "قسيمة", "خصم"]
     for el in candidate_inputs:
         el_str = f"{el.get('name', '')} {el.get('id', '')} {el.get('placeholder', '')}".lower()
         if any(c in el_str for c in coupon_keywords):
             results["coupon_element"]["found"] = True
-            results["coupon_element"]["is_prominent_box"] = True
             results["coupon_element"]["selector"] = f"{el.name}[name='{el.get('name', '')}']"
-            results["friction_flags"].append("CONVERSION LEAK: Prominent open coupon code input box detected. Triggers discount abandonment.")
-            results["friction_score"] -= 10
+            
+            parent_form = el.find_parent("form")
+            parent_div = el.find_parent(attrs={"style": True})
+            is_hidden = False
+            if el.get("type") == "hidden" or "display:none" in el.get("style", "").replace(" ", "").lower():
+                is_hidden = True
+            elif parent_form and ("display:none" in parent_form.get("style", "").replace(" ", "").lower() or "checkout_coupon" in " ".join(parent_form.get("class", []))):
+                is_hidden = True
+            elif parent_div and "display:none" in parent_div.get("style", "").replace(" ", "").lower():
+                is_hidden = True
+            elif soup.find(class_=lambda c: c and any(k in str(c) for k in ["showcoupon", "coupon-toggle"])):
+                is_hidden = True
+
+            if is_hidden:
+                results["coupon_element"]["is_prominent_box"] = False
+                results["coupon_element"]["is_collapsed"] = True
+            else:
+                results["coupon_element"]["is_prominent_box"] = True
+                results["friction_flags"].append("CONVERSION LEAK: Prominent open coupon code input box detected. Triggers discount abandonment.")
+                results["friction_score"] -= 10
             break
 
     # 5. Payment Gateways & Methods Detection (Global & Regional: US, EU, UK, GCC, MENA, LATAM, APAC)
@@ -988,9 +1022,12 @@ def print_audit_report(url, platform_info, discovered_urls, analysis_results):
     # Coupon Box Leak
     safe_print(" 🎟️ PROMO / COUPON CODE BEHAVIOR:")
     if analysis_results['coupon_element']['found']:
-        safe_print("    • Status : 🔴 OPEN PROMINENT INPUT BOX DETECTED")
-        safe_print("    • Risk   : Causes users to abandon funnel to hunt for discount codes.")
-        safe_print("    • Fix    : Collapse into a text link: 'Have a gift card or discount code?'")
+        if analysis_results['coupon_element'].get("is_prominent_box"):
+            safe_print("    • Status : 🔴 OPEN PROMINENT INPUT BOX DETECTED")
+            safe_print("    • Risk   : Causes users to abandon funnel to hunt for discount codes.")
+            safe_print("    • Fix    : Collapse into a text link: 'Have a gift card or discount code?'")
+        else:
+            safe_print("    • Status : 🟢 OPTIMAL (Collapsed behind toggle link / hidden)")
     else:
         safe_print("    • Status : 🟢 No prominent open coupon field detected in static DOM")
     safe_print(divider)
