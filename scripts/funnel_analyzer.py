@@ -7,8 +7,8 @@ estimations based on validated Baymard Institute research (calibrated for 2026+)
 Generates copy-paste developer remediation code.
 
 Usage:
-    py scripts/funnel_analyzer.py --fields 14 --autocomplete 2 --guest false --traffic 50000 --aov 150
-    py scripts/funnel_analyzer.py --fields 9 --autocomplete 9 --guest true --traffic 25000 --aov 220 --json
+    py scripts/funnel_analyzer.py --fields 14 --autocomplete 2 --guest false --coupon true --fast-pay false --trust false --traffic 50000 --aov 150 --cr 1.5
+    py scripts/funnel_analyzer.py --fields 9 --autocomplete 9 --guest true --coupon false --fast-pay true --trust true --traffic 25000 --aov 220 --cr 2.1 --json
 
 Requires: Python 3.8+ (No external dependencies)
 """
@@ -189,15 +189,16 @@ function toggleCouponField() {
 
 def main():
     parser = argparse.ArgumentParser(description=f"Funnel & Checkout CRO Quantitative Friction Engine v2.0 ({CURRENT_YEAR}+)")
-    parser.add_argument("--fields", type=int, default=11, help="Total input fields in checkout form")
-    parser.add_argument("--autocomplete", type=int, default=3, help="Fields with autocomplete attribute")
-    parser.add_argument("--guest", type=str, default="false", help="Guest checkout supported (true/false)")
-    parser.add_argument("--coupon", type=str, default="true", help="Prominent open coupon box present (true/false)")
-    parser.add_argument("--fast-pay", type=str, default="false", help="Apple Pay / 1-Click Pay supported (true/false)")
-    parser.add_argument("--trust", type=str, default="false", help="Trust badges visible (true/false)")
-    parser.add_argument("--traffic", type=int, default=20000, help="Monthly site visitors (default: 20000)")
-    parser.add_argument("--aov", type=float, default=120.0, help="Average Order Value in client currency (default: 120)")
-    parser.add_argument("--cr", type=float, default=1.5, help="Current baseline conversion rate %% (default: 1.5)")
+    # ⛔ No defaults for client facts: every value must come from audit_checkout.py output or the client's analytics.
+    parser.add_argument("--fields", type=int, required=True, help="Total input fields in checkout form (from audit_checkout.py)")
+    parser.add_argument("--autocomplete", type=int, required=True, help="Fields with autocomplete attribute (from audit_checkout.py)")
+    parser.add_argument("--guest", type=str, required=True, help="Guest checkout supported (true/false) — verified on the live site")
+    parser.add_argument("--coupon", type=str, required=True, help="Prominent open coupon box present (true/false)")
+    parser.add_argument("--fast-pay", type=str, required=True, help="Apple Pay / 1-Click Pay supported (true/false)")
+    parser.add_argument("--trust", type=str, required=True, help="Trust badges visible (true/false)")
+    parser.add_argument("--traffic", type=int, required=True, help="Monthly visitors from the client's GA4/analytics")
+    parser.add_argument("--aov", type=float, required=True, help="Average Order Value from the client's store data")
+    parser.add_argument("--cr", type=float, required=True, help="Current conversion rate %% from the client's analytics")
     parser.add_argument("--json", action="store_true", help="Output machine-readable JSON")
 
     args = parser.parse_args()
@@ -258,10 +259,10 @@ def main():
         safe_print(f" ⚡ 1-Click / Apple Pay        : {'✅ Supported' if has_fast_pay else '❌ Missing'}")
         safe_print(f" 🛡️ Security / Trust Badges    : {'✅ Visible' if has_trust else '❌ Missing'}")
         safe_print(divider)
-        safe_print(f" 🚨 ESTIMATED CHECKOUT DROP-OFF: {abandonment_risk}% of users who reach checkout abandon.")
+        safe_print(f" 🚨 ESTIMATED (heuristic model, not measured) CHECKOUT DROP-OFF: {abandonment_risk}% of users who reach checkout abandon.")
         safe_print("    (Baymard Global Average: 70.22% | Mobile Average: 82.4%)")
         safe_print(divider)
-        safe_print(" 💰 PROJECTED REVENUE RECOVERY (Upon Fixing Friction):")
+        safe_print(" 💰 PROJECTED REVENUE RECOVERY — ESTIMATE ONLY, present as a range, never a promise:")
         safe_print(f"    • Current Monthly Revenue  : {revenue_projection['current_monthly_revenue']:,}")
         safe_print(f"    • Monthly Recoverable Lift : +{revenue_projection['monthly_recovered_revenue']:,}")
         safe_print(f"    • Annual Recoverable Lift  : +{revenue_projection['annual_recovered_revenue']:,}")

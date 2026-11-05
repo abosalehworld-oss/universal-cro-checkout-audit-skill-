@@ -90,12 +90,15 @@ BAYMARD_BENCHMARKS = {
     "ideal_checkout_fields": (6, 8),
     "average_checkout_fields_measured": 11.8,
     "top_dropoff_reasons": {
-        "extra_costs_high": 48.0,
-        "forced_registration": 26.0,
-        "complicated_checkout": 22.0,
-        "trust_security_doubts": 25.0,
-        "missing_local_payment": 13.0,
-        "slow_site_or_crashes": 17.0
+        "extra_costs_high": 40.0,
+        "delivery_too_slow": 20.0,
+        "trust_security_doubts": 19.0,
+        "forced_registration": 18.0,
+        "complicated_checkout": 17.0,
+        "slow_site_or_crashes": 17.0,
+        "returns_policy_poor": 13.0,
+        "total_cost_hidden": 12.0,
+        "missing_local_payment": 9.0
     }
 }
 

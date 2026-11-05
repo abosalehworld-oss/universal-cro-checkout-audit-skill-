@@ -135,8 +135,8 @@ $env:PYTHONIOENCODING="utf-8"; py scripts/audit_checkout.py https://example.com/
 
 ```powershell
 # حساب التسرب والعائد المالي لمتجر:
-# (14 حقل، 2 فقط أوتوكومبليت، لا يوجد شراء كزائر، يوجد كوبون مفتوح، 50 ألف زائر، AOV = 150)
-$env:PYTHONIOENCODING="utf-8"; py scripts/funnel_analyzer.py --fields 14 --autocomplete 2 --guest false --coupon true --fast-pay false --traffic 50000 --aov 150
+# (14 حقل، 2 فقط أوتوكومبليت، لا يوجد شراء كزائر، يوجد كوبون مفتوح، لا يوجد دفع سريع، لا يوجد شارات ثقة، 50 ألف زائر، AOV = 150، معدل التحويل 1.5%)
+$env:PYTHONIOENCODING="utf-8"; py scripts/funnel_analyzer.py --fields 14 --autocomplete 2 --guest false --coupon true --fast-pay false --trust false --traffic 50000 --aov 150 --cr 1.5
 ```
 
 ---

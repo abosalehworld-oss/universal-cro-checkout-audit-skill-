@@ -28,8 +28,8 @@ $env:PYTHONIOENCODING="utf-8"; py scripts/audit_checkout.py <URL>
 # 2. For SPA / React / Next.js / Cloudflare-protected sites
 $env:PYTHONIOENCODING="utf-8"; py scripts/audit_checkout.py <URL> --playwright
 
-# 3. Calculate friction drop-off and generate developer code
-$env:PYTHONIOENCODING="utf-8"; py scripts/funnel_analyzer.py --fields 12 --traffic 30000 --aov 150
+# 3. Calculate friction drop-off and generate developer code (ALL params required)
+$env:PYTHONIOENCODING="utf-8"; py scripts/funnel_analyzer.py --fields 12 --autocomplete 3 --guest false --coupon true --fast-pay false --trust false --traffic 30000 --aov 150 --cr 1.8
 ```
 
 Read `SCRIPTS_GUIDE.md` for complete CLI arguments and failure handling.
