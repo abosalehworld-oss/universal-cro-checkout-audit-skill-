@@ -98,8 +98,8 @@ $env:PYTHONIOENCODING="utf-8"; py scripts/audit_checkout.py https://example.com/
 # 4. محاكاة متصفح الموبايل (iPhone Viewport + Touch Emulation):
 $env:PYTHONIOENCODING="utf-8"; py scripts/audit_checkout.py https://example.com/checkout --mobile
 
-# 5. حساب نسبة التسرب المالي والعائد المسترد وتوليد الأكواد:
-$env:PYTHONIOENCODING="utf-8"; py scripts/funnel_analyzer.py --fields 12 --autocomplete 4 --guest false --coupon true --traffic 30000 --aov 150
+# 5. حساب نسبة التسرب المالي والعائد المسترد وتوليد الأكواد (كل البارامترات إلزامية):
+$env:PYTHONIOENCODING="utf-8"; py scripts/funnel_analyzer.py --fields 12 --autocomplete 4 --guest false --coupon true --fast-pay false --trust true --traffic 30000 --aov 150 --cr 1.8
 ```
 
 ---

@@ -278,7 +278,7 @@ $env:PYTHONIOENCODING="utf-8"; py scripts/audit_checkout.py <URL> --mobile
 
 ### السيناريو 4: حساب التسرب المالي وتوليد أكواد المطورين
 ```powershell
-$env:PYTHONIOENCODING="utf-8"; py scripts/funnel_analyzer.py --fields <FIELDS> --autocomplete <AC> --guest <true/false> --traffic <VISITORS> --aov <AOV>
+$env:PYTHONIOENCODING="utf-8"; py scripts/funnel_analyzer.py --fields <FIELDS> --autocomplete <AC> --guest <true/false> --coupon <true/false> --fast-pay <true/false> --trust <true/false> --traffic <VISITORS> --aov <AOV> --cr <CR%>
 ```
 
 ---
