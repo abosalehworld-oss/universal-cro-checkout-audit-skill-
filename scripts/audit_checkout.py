@@ -316,8 +316,8 @@ class PageFetcher:
                         })
                     if pw_cookies:
                         context.add_cookies(pw_cookies)
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f"  ⚠️ Cookie sync warning (non-fatal): {e}")
 
                 # Anti-detection stealth script injection
                 context.add_init_script("""
@@ -334,8 +334,8 @@ class PageFetcher:
                 page.wait_for_timeout(2500)
                 try:
                     page.evaluate("if (document.body) window.scrollTo(0, document.body.scrollHeight / 2)")
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f"  ⚠️ Cookie sync warning (non-fatal): {e}")
                 page.wait_for_timeout(1000)
 
                 html = page.content()
@@ -569,7 +569,7 @@ def detect_platform_and_stack(html, url=""):
     elif 'opencart' in h_low or 'index.php?route=checkout' in h_low:
         detected["platform"] = "OpenCart"
         detected["is_custom"] = False
-    elif 'magento' in h_low or 'mage/' in h_low or 'mage-translation' in h_low:
+    elif 'magento' in h_low or '/mage/' in h_low or 'mage-translation' in h_low or 'mage/cookies' in h_low:
         detected["platform"] = "Magento (Adobe Commerce)"
         detected["is_custom"] = False
     elif 'bigcommerce' in h_low or 'cdn.bcapp' in h_low:
