@@ -85,6 +85,7 @@ CURRENT_YEAR = datetime.datetime.now().year
 BAYMARD_BENCHMARKS = {
     "year": CURRENT_YEAR,
     "average_cart_abandonment_global": 70.22,
+    # device split values are NOT on the Baymard page — kept only as indicative, never quote as Baymard
     "average_cart_abandonment_mobile": 82.4,
     "average_cart_abandonment_desktop": 67.8,
     "ideal_checkout_fields": (6, 8),

@@ -50,7 +50,7 @@ def calculate_abandonment_risk(total_fields, has_guest_checkout, has_open_coupon
         excess = total_fields - 8
         base_checkout_abandonment += min(24.0, excess * 2.2)
 
-    # 2. Forced account creation penalty (Baymard #2 cause, 26% cite this)
+    # 2. Forced account creation penalty (Baymard: 18% cite this, list excl. "just browsing")
     if not has_guest_checkout:
         base_checkout_abandonment += 21.5
 
@@ -260,7 +260,7 @@ def main():
         safe_print(f" 🛡️ Security / Trust Badges    : {'✅ Visible' if has_trust else '❌ Missing'}")
         safe_print(divider)
         safe_print(f" 🚨 ESTIMATED (heuristic model, not measured) CHECKOUT DROP-OFF: {abandonment_risk}% of users who reach checkout abandon.")
-        safe_print("    (Baymard Global Average: 70.22% | Mobile Average: 82.4%)")
+        safe_print("    (Baymard global average: 70.22% across 50 studies — reference only)")
         safe_print(divider)
         safe_print(" 💰 PROJECTED REVENUE RECOVERY — ESTIMATE ONLY, present as a range, never a promise:")
         safe_print(f"    • Current Monthly Revenue  : {revenue_projection['current_monthly_revenue']:,}")
